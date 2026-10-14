@@ -244,6 +244,14 @@
     padding:7px 12px;font-size:12px;border-radius:7px;
   }
   .remove-btn:hover{background:rgba(226,96,79,.1);}
+  .footer-actions{display:flex;gap:8px;flex-wrap:wrap;}
+  .baixa-btn{
+    background:var(--teal);color:#06231f;border:1px solid var(--teal);
+    padding:7px 12px;font-size:12px;font-weight:700;border-radius:7px;cursor:pointer;
+  }
+  .baixa-btn:hover{filter:brightness(1.1);}
+  .baixa-btn.reopen{background:transparent;color:var(--ink-dim);border-color:var(--line);font-weight:600;}
+  .baixa-btn.reopen:hover{color:var(--ink);border-color:var(--teal);}
 
   .comments-toggle{
     background:transparent;color:var(--ink-dim);border:1px solid var(--line);
@@ -752,7 +760,12 @@ function renderItems(){
 
       <div class="item-footer">
         <button class="comments-toggle" data-toggle-comments="${item.id}">💬 Comentários (${item.comentarios.length})</button>
-        <button class="remove-btn">Remover item</button>
+        <div class="footer-actions">
+          ${item.status === 'Entregue'
+            ? `<button class="baixa-btn reopen">↺ Reabrir</button>`
+            : `<button class="baixa-btn">✔ Dar baixa</button>`}
+          <button class="remove-btn">Remover item</button>
+        </div>
       </div>
 
       ${openComments.has(item.id) ? `
@@ -844,6 +857,15 @@ function renderItems(){
         if(e.key === 'Enter') addComment();
       });
     }
+
+    card.querySelector('.baixa-btn').addEventListener('click', async () => {
+      const previousStatus = item.status;
+      item.status = previousStatus === 'Entregue' ? 'Pendente' : 'Entregue';
+      applyProgressRuleOnStatusChange(item, previousStatus);
+      await saveItems();
+      renderSummary();
+      renderItems();
+    });
 
     card.querySelector('.remove-btn').addEventListener('click', async () => {
       if(confirm(`Remover "${item.desenvolvimento}" do escopo?`)){
