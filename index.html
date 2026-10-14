@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HSA Connect — Painel de Melhorias do App</title>
+<style>
+  :root{
+    --navy-950:#0b1420;
+    --navy-900:#0f1e30;
+    --navy-800:#152b43;
+    --navy-700:#1c3a58;
+    --navy-600:#274a6e;
+    --line:#26415f;
+    --teal:#1fb6a6;
+    --teal-dim:#164f49;
+    --amber:#e0a53c;
+    --amber-dim:#4a3a19;
+    --red:#e2604f;
+    --red-dim:#4a231d;
+    --grey:#8a9bb0;
+    --ink:#eaf1f8;
+    --ink-dim:#a7b8cc;
+    --card:#122236;
+    --card-hover:#15283f;
+    font-size:16px;
+  }
+  html[data-theme="light"]{
+    --navy-950:#eef2f6;
+    --navy-900:#ffffff;
+    --navy-800:#f3f5f8;
+    --navy-700:#e3e8ee;
+    --navy-600:#d3dae3;
+    --line:#d7dee6;
+    --teal:#0d8f80;
+    --teal-dim:#bfe9e2;
+    --amber:#b5790a;
+    --amber-dim:#f5e3bd;
+    --red:#c8402f;
+    --red-dim:#f4d3ce;
+    --grey:#6b7a8d;
+    --ink:#132033;
+    --ink-dim:#5c6c80;
+    --card:#ffffff;
+    --card-hover:#f5f8fb;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(1200px 600px at 90% -10%, color-mix(in srgb, var(--navy-700) 60%, transparent) 0%, transparent 60%),
+      var(--navy-950);
+    color:var(--ink);
+    font-family:"Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    min-height:100vh;
+    padding:28px 20px 80px;
+    transition:background .2s ease, color .2s ease;
+  }
+  .theme-toggle{
+    background:transparent;color:var(--ink-dim);border:1px solid var(--line);
+    padding:10px 12px;font-size:15px;line-height:1;
+  }
+  .theme-toggle:hover{color:var(--teal);border-color:var(--teal-dim);}
+  .wrap{max-width:1180px;margin:0 auto;}
+
+  /* HEADER */
+  header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:20px;
+    margin-bottom:26px;
+    flex-wrap:wrap;
+  }
+  .brand{display:flex;align-items:center;gap:14px;}
+  .brand .mark{
+    width:46px;height:46px;border-radius:12px;
+    background:linear-gradient(135deg, var(--teal), #0d7d70);
+    display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:15px;color:#06231f;
+    box-shadow:0 6px 18px rgba(31,182,166,.25);
+    flex-shrink:0;
+  }
+  .brand h1{font-size:20px;margin:0;letter-spacing:.2px;}
+  .brand p{margin:2px 0 0;color:var(--ink-dim);font-size:13px;}
+  .brand-sub{font-weight:400;color:var(--teal);}
+
+  .actions{display:flex;gap:10px;flex-wrap:wrap;}
+  button{
+    font-family:inherit;cursor:pointer;border:none;border-radius:8px;
+    font-size:13.5px;font-weight:600;
+    transition:transform .12s ease, background .15s ease, box-shadow .15s ease;
+  }
+  button:active{transform:translateY(1px);}
+  .btn-primary{
+    background:var(--teal);color:#06231f;padding:10px 16px;
+    box-shadow:0 4px 14px rgba(31,182,166,.25);
+  }
+  .btn-primary:hover{background:#26cdba;}
+  .btn-ghost{
+    background:transparent;color:var(--ink-dim);padding:10px 14px;
+    border:1px solid var(--line);
+  }
+  .btn-ghost:hover{color:var(--ink);border-color:var(--teal);}
+
+  /* SUMMARY */
+  .summary{
+    display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:22px;
+  }
+  @media(max-width:1050px){.summary{grid-template-columns:repeat(3,1fr);}}
+  @media(max-width:640px){.summary{grid-template-columns:repeat(2,1fr);}}
+  .stat{
+    background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:16px 16px;
+    cursor:pointer;text-align:left;font-family:inherit;
+    transition:border-color .15s ease, transform .12s ease, background .15s ease;
+  }
+  .stat:hover{border-color:var(--teal-dim);background:var(--card-hover);}
+  .stat:active{transform:translateY(1px);}
+  .stat.active{border-color:var(--teal);box-shadow:0 0 0 1px var(--teal) inset;}
+  .stat.static{cursor:default;}
+  .stat.static:hover{border-color:var(--line);background:var(--card);}
+  .stat .num{font-size:24px;font-weight:800;letter-spacing:-.3px;}
+  .stat .lbl{font-size:12px;color:var(--ink-dim);margin-top:4px;text-transform:uppercase;letter-spacing:.4px;}
+  .stat.teal .num{color:var(--teal);}
+  .stat.amber .num{color:var(--amber);}
+  .stat.red .num{color:var(--red);}
+  .stat.grey .num{color:var(--grey);}
+
+  .progress-overall{
+    background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:18px 20px;margin-bottom:26px;
+  }
+  .progress-overall .top{
+    display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;
+  }
+  .progress-overall .top span:first-child{font-size:13px;color:var(--ink-dim);font-weight:600;text-transform:uppercase;letter-spacing:.4px;}
+  .progress-overall .top span:last-child{font-size:15px;font-weight:800;color:var(--teal);}
+  .bar-track{height:10px;border-radius:6px;background:var(--navy-700);overflow:hidden;}
+  .bar-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,#0d7d70,var(--teal));transition:width .4s ease;}
+
+  /* TOOLBAR */
+  .toolbar{
+    display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;align-items:center;
+  }
+  .toolbar input[type=text], .toolbar select{
+    background:var(--navy-800);border:1px solid var(--line);color:var(--ink);
+    padding:9px 12px;border-radius:8px;font-size:13.5px;font-family:inherit;
+  }
+  .toolbar input[type=text]{flex:1;min-width:180px;}
+  .toolbar select{cursor:pointer;}
+  .count-note{font-size:12.5px;color:var(--ink-dim);margin-left:auto;}
+
+  /* CARDS */
+  .items{display:flex;flex-direction:column;gap:12px;}
+  .item{
+    background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:16px 18px;transition:background .15s ease;
+  }
+  .item:hover{background:var(--card-hover);}
+  .item-top{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;}
+  .item-title-block{flex:1;min-width:240px;}
+  .tags{display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap;}
+  .tag{
+    font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;
+    padding:3px 8px;border-radius:5px;border:1px solid var(--line);color:var(--ink-dim);
+  }
+  .tag.grupo{color:var(--teal);border-color:var(--teal-dim);background:rgba(31,182,166,.08);}
+  .tag.prio-zero{color:#c9c9c9;}
+  .tag.prio-1{color:var(--red);border-color:var(--red-dim);background:rgba(226,96,79,.08);}
+  .tag.prio-2{color:var(--amber);border-color:var(--amber-dim);background:rgba(224,165,60,.08);}
+  .tag.prio-3{color:var(--grey);}
+  .item-title{font-size:15px;font-weight:700;margin:0 0 4px;}
+  .item-detail{
+    font-size:13px;color:var(--ink-dim);line-height:1.5;
+    max-height:38px;overflow:hidden;transition:max-height .25s ease;
+    cursor:pointer;
+  }
+  .item-detail.open{max-height:400px;}
+  .item-detail .toggle{color:var(--teal);font-weight:600;font-size:12px;display:block;margin-top:4px;}
+
+  .item-meta{display:flex;flex-direction:column;align-items:flex-end;gap:6px;min-width:150px;}
+  .valor{font-size:16px;font-weight:800;color:var(--teal);}
+  .dias-ref{font-size:11.5px;color:var(--ink-dim);}
+  .entrega-badge{font-size:12px;font-weight:700;padding:3px 9px;border-radius:6px;white-space:nowrap;}
+  .entrega-badge.ok{color:var(--teal);background:rgba(31,182,166,.1);}
+  .entrega-badge.warn{color:var(--amber);background:rgba(224,165,60,.1);}
+  .entrega-badge.late{color:var(--red);background:rgba(226,96,79,.1);}
+  .entrega-badge.done{color:var(--teal);background:rgba(31,182,166,.1);}
+  .entrega-badge.cancel{color:var(--ink-dim);background:rgba(138,155,176,.1);}
+  .entrega-badge.sem-prazo{color:var(--ink-dim);font-style:italic;font-weight:600;background:none;padding:0;}
+
+  .item-controls{
+    display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-top:14px;
+    padding-top:14px;border-top:1px solid var(--line);
+  }
+  @media(max-width:900px){.item-controls{grid-template-columns:1fr 1fr;}}
+  @media(max-width:640px){.item-controls{grid-template-columns:1fr;}}
+  .field label{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--ink-dim);margin-bottom:5px;font-weight:700;}
+  .field input[type=date], .field select, .field input[type=text]{
+    width:100%;background:var(--navy-800);border:1px solid var(--line);color:var(--ink);
+    padding:8px 10px;border-radius:7px;font-size:13px;font-family:inherit;
+  }
+  .field input[type=date]:focus, .field select:focus, .field input[type=text]:focus{
+    outline:none;border-color:var(--teal);
+  }
+  .status-select{font-weight:700;}
+  .status-select.st-nao{color:var(--grey);}
+  .status-select.st-and{color:var(--amber);}
+  .status-select.st-entregue{color:var(--teal);}
+  .status-select.st-atrasado{color:var(--red);}
+  .status-select.st-cancel{color:var(--ink-dim);}
+
+  .item-progress{margin-top:12px;}
+  .item-progress .bar-track{height:6px;}
+  .progress-row{display:flex;align-items:center;gap:10px;}
+  .progress-row .bar-track{flex:1;}
+  .progress-pct{font-size:12px;font-weight:800;color:var(--teal);min-width:34px;text-align:right;}
+  .progress-slider{
+    -webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:3px;
+    background:var(--navy-700);margin-top:8px;cursor:pointer;
+  }
+  .progress-slider:disabled{cursor:not-allowed;opacity:.5;}
+  .progress-slider::-webkit-slider-thumb{
+    -webkit-appearance:none;appearance:none;width:14px;height:14px;border-radius:50%;
+    background:var(--teal);border:2px solid #06231f;box-shadow:0 0 0 2px rgba(31,182,166,.25);
+    margin-top:-5px;
+  }
+  .progress-slider::-moz-range-thumb{
+    width:14px;height:14px;border-radius:50%;background:var(--teal);border:2px solid #06231f;
+  }
+  .progress-slider::-moz-range-track{height:4px;border-radius:3px;background:var(--navy-700);}
+  .progress-hint{font-size:10.5px;color:var(--ink-dim);margin-top:4px;}
+  .prazo-flag{font-size:11px;margin-top:5px;font-weight:700;}
+  .prazo-flag.ok{color:var(--teal);}
+  .prazo-flag.warn{color:var(--amber);}
+  .prazo-flag.late{color:var(--red);}
+
+  .item-footer{display:flex;justify-content:space-between;align-items:center;margin-top:12px;gap:10px;flex-wrap:wrap;}
+  .notes-wrap{flex:1;min-width:200px;}
+  .notes-wrap input{width:100%;}
+  .remove-btn{
+    background:transparent;color:var(--red);border:1px solid var(--red-dim);
+    padding:7px 12px;font-size:12px;border-radius:7px;
+  }
+  .remove-btn:hover{background:rgba(226,96,79,.1);}
+
+  .comments-toggle{
+    background:transparent;color:var(--ink-dim);border:1px solid var(--line);
+    padding:7px 12px;font-size:12px;border-radius:7px;
+  }
+  .comments-toggle:hover{color:var(--teal);border-color:var(--teal-dim);}
+  .comments-panel{
+    margin-top:12px;padding-top:12px;border-top:1px dashed var(--line);
+  }
+  .comment-list{display:flex;flex-direction:column;gap:8px;max-height:220px;overflow-y:auto;margin-bottom:10px;}
+  .comment-bubble{
+    background:var(--navy-800);border:1px solid var(--line);border-radius:8px;
+    padding:8px 10px;font-size:12.5px;line-height:1.45;
+  }
+  .comment-bubble .meta{font-size:10.5px;color:var(--teal);font-weight:700;margin-bottom:3px;}
+  .comment-empty{font-size:12px;color:var(--ink-dim);font-style:italic;margin-bottom:10px;}
+  .comment-add{display:flex;gap:8px;flex-wrap:wrap;}
+  .comment-add input.comment-author{flex:0 0 150px;}
+  .comment-add input.comment-input{flex:1;min-width:160px;}
+  .comment-add input{
+    background:var(--navy-800);border:1px solid var(--line);color:var(--ink);
+    padding:8px 10px;border-radius:7px;font-size:13px;font-family:inherit;
+  }
+  .comment-add button{
+    background:var(--teal);color:#06231f;padding:8px 14px;border-radius:7px;font-size:12.5px;
+  }
+  .comment-add button:hover{background:#26cdba;}
+
+  /* ADD FORM MODAL */
+  .overlay{
+    position:fixed;inset:0;background:rgba(6,12,20,.65);backdrop-filter:blur(2px);
+    display:none;align-items:center;justify-content:center;z-index:50;padding:20px;
+  }
+  .overlay.show{display:flex;}
+  .modal{
+    background:var(--navy-900);border:1px solid var(--line);border-radius:14px;
+    padding:24px;max-width:520px;width:100%;max-height:88vh;overflow-y:auto;
+  }
+  .modal h2{margin:0 0 16px;font-size:17px;}
+  .modal .field{margin-bottom:12px;}
+  .modal textarea{
+    width:100%;background:var(--navy-800);border:1px solid var(--line);color:var(--ink);
+    padding:9px 11px;border-radius:7px;font-size:13px;font-family:inherit;resize:vertical;min-height:60px;
+  }
+  .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px;}
+
+  .empty{
+    text-align:center;padding:50px 20px;color:var(--ink-dim);
+    background:var(--card);border:1px dashed var(--line);border-radius:12px;
+  }
+
+  .loading{text-align:center;padding:60px;color:var(--ink-dim);font-size:14px;}
+
+  .sync-status{
+    font-size:11.5px;font-weight:700;align-self:center;padding:6px 10px;
+    border-radius:6px;color:var(--ink-dim);
+  }
+  .sync-status.ok{color:var(--teal);background:rgba(31,182,166,.08);}
+  .sync-status.saving{color:var(--amber);background:rgba(224,165,60,.08);}
+  .sync-status.error{color:var(--red);background:rgba(226,96,79,.08);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">
+      <div class="mark">HC</div>
+      <div>
+        <h1>HSA Connect <span class="brand-sub">· Painel de Melhorias</span></h1>
+        <p>Dimensionamento do App Tailler — prazos, status e valores</p>
+      </div>
+    </div>
+    <div class="actions">
+      <span class="sync-status" id="syncStatus"></span>
+      <button class="theme-toggle" id="themeToggle" title="Alternar tema claro/escuro">🌙</button>
+      <button class="btn-ghost" id="refreshBtn">Atualizar agora</button>
+      <button class="btn-ghost" id="resetBtn">Restaurar base original</button>
+      <button class="btn-primary" id="addBtn">+ Novo item</button>
+    </div>
+  </header>
+
+  <div id="loading" class="loading">Carregando painel…</div>
+
+  <div id="content" style="display:none;">
+
+    <div class="summary" id="summary"></div>
+
+    <div class="progress-overall">
+      <div class="top">
+        <span>Progresso geral do escopo</span>
+        <span id="overallPct">0%</span>
+      </div>
+      <div class="bar-track"><div class="bar-fill" id="overallBar" style="width:0%"></div></div>
+    </div>
+
+    <div class="toolbar">
+      <input type="text" id="searchInput" placeholder="Buscar por grupo, item ou descrição...">
+      <select id="filterGrupo"><option value="">Todos os grupos</option></select>
+      <select id="filterStatus">
+        <option value="">Todos os status</option>
+        <option>Pendente</option>
+        <option>Em andamento</option>
+        <option>Aguardando definição</option>
+        <option>Entregue</option>
+        <option>Atrasado</option>
+        <option>Cancelado</option>
+      </select>
+      <select id="sortBy">
+        <option value="prioridade">Ordenar por prioridade</option>
+        <option value="prazo">Ordenar por prazo</option>
+        <option value="valor">Ordenar por valor</option>
+        <option value="status">Ordenar por status</option>
+      </select>
+      <span class="count-note" id="countNote"></span>
+    </div>
+
+    <div class="items" id="itemsList"></div>
+  </div>
+</div>
+
+<!-- Modal para novo item -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h2>Adicionar novo item ao escopo</h2>
+    <div class="field"><label>Grupo</label><input type="text" id="f_grupo" placeholder="Ex: Checklist"></div>
+    <div class="field"><label>Desenvolvimento</label><input type="text" id="f_desenv" placeholder="Título curto da funcionalidade"></div>
+    <div class="field"><label>Detalhamento</label><textarea id="f_detalhe" placeholder="Descrição detalhada do que deve ser feito"></textarea></div>
+    <div class="field"><label>Prioridade</label>
+      <select id="f_prioridade"><option value="1">1 (mais alta)</option><option value="2">2</option><option value="3">3</option></select>
+    </div>
+    <div class="field"><label>Valor (R$)</label><input type="text" id="f_valor" placeholder="Ex: 1200"></div>
+    <div class="field"><label>Prazo (data)</label><input type="date" id="f_prazo"></div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="cancelAdd">Cancelar</button>
+      <button class="btn-primary" id="confirmAdd">Adicionar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// URL do Apps Script publicado (Implantar > App da Web) — fonte de dados compartilhada via Google Sheets
+const API_URL = 'https://script.google.com/macros/s/AKfycbxSe0Y6z1JLYVi9l0m0g6TOR9_1eVe1Z86aiXvPduabqDSOI_3vEYhdNmPA1oiONRNYhQ/exec';
+
+const DEFAULT_ITEMS = [
+{grupo:'Retrofit total de telas OCNO',desenvolvimento:'Identidade visual e APIs',detalhamento:'Desenvolvimento inicial integrando as versões do APP atual com o OCNO - manter linguagem .NET C#',prazoDias:5,prioridade:'ZERO',valor:1000,status:'Entregue',progress:100,notas:''},
+{grupo:'Checklist',desenvolvimento:'Check in e check out, data, hora, previsão de tempo de serviço e geolocalização',detalhamento:'Temos o checkin do evento (ao entrar no shopping. Registro é ao pressionar um botão na lista de unidades "iniciar evento"). Podemos entrar nas unidades e consultar os checklists, porém, só é possível iniciar uma auditoria caso apertarmos um botão de "iniciar serviço". O checkout de uma unidade é a partir da finalização de uma visita. O checkout do evento é a finalização do evento (deve haver um botão para finalizar o evento).',prazoDias:3,prioridade:1,valor:800,status:'Não iniciado',notas:''},
+{grupo:'Planos de ação',desenvolvimento:'Inclusão, interação, e baixa de plano de ação',detalhamento:'Desenvolvimento do Plano de ação vinculado ao sistema (possibilidade de abertura de um plano de ação e gerenciar os planos de ação). A ideia é conseguirmos utilizar todas as funções do plano de ação que estão no sistema, no app. Por não conformidade, deve aparecer um botão "Incluir PA" para gerar um plano de ação, ou a possibilidade de configurar no próprio checklist se quer criar um plano de ação automaticamente para NC grave.',prazoDias:6,prioridade:1,valor:1600,status:'Não iniciado',notas:''},
+{grupo:'Geral',desenvolvimento:'Login; evento, tipo de serviço (VISITAS, ROTINAS, PLANO DE AÇÃO), UNIDADES',detalhamento:'Como existe uma solicitação de colocar mais de um checklist por visita em uma unidade, o app também tem que possuir essa funcionalidade. Sugestão: Ao abrir a unidade no evento, devem aparecer os checklists vinculados. Deve ser possível sair de um checklist e ir para o outro a qualquer momento.',prazoDias:6,prioridade:1,valor:1600,status:'Não iniciado',notas:'Vamos criar um evento com 4 checklist (HSA, BIO, Áreas comuns e Equipe de Limpeza).'},
+{grupo:'Checklist',desenvolvimento:'Abrir NINC no sistema',detalhamento:'Quando houver uma NC normal num evento, deve surgir um botão "Incluir NINC" em cada não conformidade. No caso das NCs graves, a inclusão da ninc é automática; caso haja apenas NCs comuns, a utilização do "incluir ninc" é opcional (parametrizável no checklist). Deve abrir dois campos para assinatura e preenchimento de dados de responsável. A primeira assinatura deve ser a da NINC, a segunda da auditoria. Ao finalizar a auditoria, a NINC deve ser enviada por e-mail e WhatsApp para os usuários cadastrados, com possibilidade de reenvio via web.',prazoDias:3,prioridade:1,valor:800,status:'Não iniciado',notas:'Enviar para Alex o template da NINC.'},
+{grupo:'Checklist',desenvolvimento:'Inserir item crítico durante o monitoramento (revisar)',detalhamento:'Aguardando posicionamento da Tailler.',prazoDias:null,prioridade:1,valor:null,status:'Aguardando definição',notas:''},
+{grupo:'Planos de ação',desenvolvimento:'Levar ao app o dashboard do Plano de ação',detalhamento:'Levar em forma de listagem.',prazoDias:6,prioridade:1,valor:1600,status:'Não iniciado',notas:''},
+{grupo:'Ajustes APP',desenvolvimento:'Possibilidade de enviar imagens pendentes e/ou texto separadamente',detalhamento:'Ao reenviar a auditoria, devem haver dois botões: um para imagens e outro para auditorias.',prazoDias:2,prioridade:1,valor:400,status:'Não iniciado',notas:''},
+{grupo:'Checklist',desenvolvimento:'Incluir mais de uma assinatura ao final da auditoria',detalhamento:'Deve ser possível adicionar mais de uma assinatura, sem necessidade de criar usuário.',prazoDias:3,prioridade:1,valor:600,status:'Não iniciado',notas:''},
+{grupo:'Geral',desenvolvimento:'Adicionar mais de uma foto em toda a estrutura do sistema',detalhamento:'Deve ser possível adicionar mais de uma foto por não conformidade em um ambiente.',prazoDias:6,prioridade:2,valor:1600,status:'Não iniciado',notas:''},
+{grupo:'Checklist',desenvolvimento:'Criar campos de Observações e ALERTA em cada evento e nas auditorias',detalhamento:'Campo de observações por EVENTO registrado no relatório. O campo ALERTA envia notificação para o suporte técnico. Campo de comentários sobre o evento para reclamações ou elogios, com categoria (reclamação, elogio, solicitação, sugestão).',prazoDias:3,prioridade:2,valor:800,status:'Não iniciado',notas:'Falar com o Roberto sobre este desenvolvimento.'},
+{grupo:'Checklist',desenvolvimento:'Criar na WEB campo para observações e comentários',detalhamento:'No sistema, deve haver dois campos (observações e comentários) cadastrados nos locais, visualizados no app no mesmo local. Ex: "apenas auditar este local com a presença do proprietário xxxx".',prazoDias:6,prioridade:2,valor:1600,status:'Não iniciado',notas:''},
+{grupo:'Checklist',desenvolvimento:'Motivo e justificativa quando uma visita não é realizada',detalhamento:'Ao cancelar um local: Encerrado, Fechado, Não autorizado, Outros (descreva). Se "Encerrado", o local deve ser desativado no cadastro do cliente (área técnica), com possibilidade de frases prontas.',prazoDias:6,prioridade:2,valor:1600,status:'Não iniciado',notas:''},
+{grupo:'Checklist',desenvolvimento:'Inserir nome do auditor em cada unidade (local)',detalhamento:'Na tela de locais, como auditor responsável, deve ser possível saber o auditor responsável por cada local.',prazoDias:6,prioridade:2,valor:1600,status:'Não iniciado',notas:''},
+{grupo:'Checklist',desenvolvimento:'Sinalizar itens críticos com círculo vermelho',detalhamento:'No checklist deve haver algo que sinalize os itens críticos.',prazoDias:2,prioridade:2,valor:400,status:'Não iniciado',notas:''},
+{grupo:'Gestão de rotinas',desenvolvimento:'Desenvolvimento da gestão de rotinas no app',detalhamento:'Necessário estudar como está na web e validar se está atendendo o esperado.',prazoDias:null,prioridade:3,valor:null,status:'Aguardando definição',notas:'Fazer um teste mais abrangente: criar 4 rotinas, cadastrar equipamento sem um cliente.'},
+{grupo:'Geral',desenvolvimento:'Botão FALE CONOSCO na tela inicial',detalhamento:'Botão "Fale conosco" com categorias, chegando via sistema (menu AJUDA na web) ou WhatsApp. Registro de solicitante, origem, data, hora, cliente. Notificação de mensagens não lidas, como no WhatsApp.',prazoDias:9,prioridade:3,valor:2400,status:'Não iniciado',notas:'Falar com Renato da Envia.'},
+{grupo:'Checklist',desenvolvimento:'Indicador de quantidade de Não Conformidades por ambiente',detalhamento:'Ambientes com registros recebem um "check" (ícone/cor) sinalizando presença de registros. Na barra "Crítico" na lista de locais, ao pressionar, deve abrir listagem de itens críticos pontuados naquele local.',prazoDias:3,prioridade:3,valor:800,status:'Não iniciado',notas:''},
+{grupo:'App Cliente',desenvolvimento:'Dashboards e extração de relatórios para clientes',detalhamento:'Criação de app para uso de clientes, com acesso ao dashboard do local, unidade ou grupo, download de relatórios e consulta de planos de ação, entre outros.',prazoDias:18,prioridade:3,valor:4800,status:'Não iniciado',notas:'Será criado um app para acesso ao sistema web, responsivo.'},
+{grupo:'Checklist',desenvolvimento:'Gestão das atividades em tempo real',detalhamento:'Como auditor responsável, deve ser possível visualizar em tempo real o que a outra auditora está realizando.',prazoDias:15,prioridade:3,valor:4000,status:'Não iniciado',notas:''},
+{grupo:'Checklist',desenvolvimento:'Pesquisar no checklist por palavras-chave',detalhamento:'Pesquisar no checklist por palavras-chave para localizar mais rapidamente os subitens de acordo com a palavra pesquisada.',prazoDias:3,prioridade:3,valor:800,status:'Não iniciado',notas:'Não conseguimos encontrar para homologar.'}
+];
+
+let items = [];
+let openDetails = new Set();
+let openComments = new Set();
+let lastSyncOk = null;
+let activeQuickFilter = null; // 'all' | 'Pendente' | 'Entregue' | 'Em andamento' | 'atrasados' | null
+
+function uid(){ return 'it_' + Math.random().toString(36).slice(2,10); }
+
+function getSavedAuthorName(){
+  try{ return localStorage.getItem('hsa_comment_author') || ''; }catch(e){ return ''; }
+}
+function saveAuthorName(name){
+  try{ localStorage.setItem('hsa_comment_author', name); }catch(e){ /* ignora se bloqueado */ }
+}
+
+// Garante que todo item tenha a lista de comentários (migrando o antigo campo único "notas"),
+// o campo de responsável, e normaliza o status antigo "Não iniciado" para "Pendente".
+function ensureComments(item){
+  if(!Array.isArray(item.comentarios)){
+    item.comentarios = (item.notas && item.notas.trim()) ? [{ texto: item.notas.trim(), autor: null, data: null }] : [];
+  }
+  item.comentarios = item.comentarios.map(c => ({ autor: c.autor || null, texto: c.texto, data: c.data }));
+  if(item.status === 'Não iniciado') item.status = 'Pendente';
+  if(item.responsavel === undefined) item.responsavel = '';
+  return item;
+}
+
+function setSyncStatus(state){
+  const el = document.getElementById('syncStatus');
+  if(!el) return;
+  const now = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+  if(state === 'ok'){
+    lastSyncOk = now;
+    el.textContent = `Sincronizado às ${now}`;
+    el.className = 'sync-status ok';
+  }else if(state === 'saving'){
+    el.textContent = 'Salvando...';
+    el.className = 'sync-status saving';
+  }else if(state === 'loading'){
+    el.textContent = 'Carregando dados da planilha...';
+    el.className = 'sync-status saving';
+  }else{
+    el.textContent = `Erro ao sincronizar com a planilha${lastSyncOk ? ' (última vez ok às ' + lastSyncOk + ')' : ''}`;
+    el.className = 'sync-status error';
+  }
+}
+
+async function loadItems(){
+  setSyncStatus('loading');
+  try{
+    const res = await fetch(API_URL, { method: 'GET' });
+    const data = await res.json();
+    if(Array.isArray(data) && data.length > 0){
+      items = data.map(ensureComments);
+      setSyncStatus('ok');
+      return;
+    }
+  }catch(e){
+    console.error('Erro ao carregar da planilha', e);
+    setSyncStatus('error');
+    // fallback local para não deixar a tela em branco caso a planilha esteja fora do ar
+    items = DEFAULT_ITEMS.map(it => ({...it, id: uid(), prazoData: null, progress: it.progress ?? (it.status === 'Entregue' ? 100 : 0)})).map(ensureComments);
+    return;
+  }
+  // planilha respondeu vazia (primeira vez): popular com a base original
+  items = DEFAULT_ITEMS.map(it => ({...it, id: uid(), prazoData: null, progress: it.progress ?? (it.status === 'Entregue' ? 100 : 0)})).map(ensureComments);
+  await saveItems();
+}
+
+async function saveItems(){
+  setSyncStatus('saving');
+  try{
+    await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // evita preflight CORS no Apps Script
+      body: JSON.stringify(items)
+    });
+    setSyncStatus('ok');
+  }catch(e){
+    console.error('Erro ao salvar na planilha', e);
+    setSyncStatus('error');
+  }
+}
+
+// Busca silenciosa em segundo plano para pegar alterações de outras pessoas do time.
+// Só substitui a tela se ninguém estiver digitando em um campo no momento.
+async function syncFromServer(){
+  const typing = document.activeElement && ['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName);
+  if(typing || overlay.classList.contains('show')) return;
+  try{
+    const res = await fetch(API_URL, { method: 'GET' });
+    const data = await res.json();
+    if(Array.isArray(data)){
+      items = data.map(ensureComments);
+      setSyncStatus('ok');
+      renderAll();
+    }
+  }catch(e){
+    setSyncStatus('error');
+  }
+}
+
+function statusClass(status){
+  switch(status){
+    case 'Pendente': return 'st-nao';
+    case 'Em andamento': return 'st-and';
+    case 'Entregue': return 'st-entregue';
+    case 'Atrasado': return 'st-atrasado';
+    case 'Cancelado': return 'st-cancel';
+    default: return 'st-nao';
+  }
+}
+// Progresso é livre (0-99) apenas quando o status permite ajuste manual.
+// Pendente e Cancelado travam em 0%. Entregue trava em 100%.
+// Em andamento e Atrasado entram com 10% (se ainda estiverem zerados) e podem ser ajustados no slider.
+const PROGRESS_LOCKED = { 'Pendente': 0, 'Cancelado': 0, 'Entregue': 100 };
+const PROGRESS_DEFAULT_ON_ENTER = { 'Em andamento': 10, 'Atrasado': 10, 'Aguardando definição': 5 };
+
+function isProgressEditable(status){
+  return !(status in PROGRESS_LOCKED);
+}
+function getItemProgress(item){
+  if(item.status in PROGRESS_LOCKED) return PROGRESS_LOCKED[item.status];
+  return item.progress ?? 0;
+}
+// Chamada quando o status muda: aplica a "inteligência" de valor inicial/travado.
+function applyProgressRuleOnStatusChange(item, previousStatus){
+  if(item.status in PROGRESS_LOCKED){
+    item.progress = PROGRESS_LOCKED[item.status];
+    return;
+  }
+  // Saindo de um status travado (ou sem progresso ainda) para um editável: aplica valor inicial sugerido.
+  if((!item.progress || previousStatus in PROGRESS_LOCKED) && item.status in PROGRESS_DEFAULT_ON_ENTER){
+    item.progress = PROGRESS_DEFAULT_ON_ENTER[item.status];
+  }
+}
+function prioClass(p){
+  if(p === 'ZERO') return 'prio-zero';
+  if(p == 1) return 'prio-1';
+  if(p == 2) return 'prio-2';
+  return 'prio-3';
+}
+function fmtMoney(v){
+  if(v === null || v === undefined || v === '') return '—';
+  const n = Number(v);
+  if(isNaN(n)) return '—';
+  return 'R$ ' + n.toLocaleString('pt-BR', {minimumFractionDigits:0});
+}
+function prazoFlag(item){
+  if(!item.prazoData) return '';
+  const today = new Date(); today.setHours(0,0,0,0);
+  const due = new Date(item.prazoData + 'T00:00:00');
+  const diffDays = Math.round((due - today) / 86400000);
+  if(item.status === 'Entregue' || item.status === 'Cancelado') return '';
+  if(diffDays < 0) return `<div class="prazo-flag late">Atrasado há ${Math.abs(diffDays)} dia(s)</div>`;
+  if(diffDays <= 3) return `<div class="prazo-flag warn">Vence em ${diffDays} dia(s)</div>`;
+  return `<div class="prazo-flag ok">Prazo em ${diffDays} dia(s)</div>`;
+}
+function fmtDateBR(dateStr){
+  if(!dateStr) return null;
+  const [y,m,d] = dateStr.split('-');
+  return `${d}/${m}/${y}`;
+}
+// Selo de entrega sempre visível no topo do card, sem precisar abrir os detalhes.
+function entregaBadge(item){
+  const dateFmt = fmtDateBR(item.prazoData);
+  if(!dateFmt) return `<div class="entrega-badge sem-prazo">Sem prazo definido</div>`;
+  let cls = 'ok';
+  if(item.status === 'Entregue') cls = 'done';
+  else if(item.status === 'Cancelado') cls = 'cancel';
+  else{
+    const today = new Date(); today.setHours(0,0,0,0);
+    const due = new Date(item.prazoData + 'T00:00:00');
+    const diffDays = Math.round((due - today) / 86400000);
+    cls = diffDays < 0 ? 'late' : (diffDays <= 3 ? 'warn' : 'ok');
+  }
+  return `<div class="entrega-badge ${cls}">Entrega: ${dateFmt}</div>`;
+}
+
+function renderSummary(){
+  const total = items.length;
+  const pendentes = items.filter(i => i.status === 'Pendente').length;
+  const entregues = items.filter(i => i.status === 'Entregue').length;
+  const andamento = items.filter(i => i.status === 'Em andamento').length;
+  const atrasados = items.filter(i => {
+    if(!i.prazoData || i.status === 'Entregue' || i.status === 'Cancelado') return false;
+    return new Date(i.prazoData + 'T00:00:00') < new Date(new Date().toDateString());
+  }).length;
+  const valorTotal = items.reduce((s,i) => s + (Number(i.valor) || 0), 0);
+
+  const isActive = (key) => activeQuickFilter === key ? ' active' : '';
+
+  document.getElementById('summary').innerHTML = `
+    <button type="button" class="stat${isActive('all')}" data-filter="all"><div class="num">${total}</div><div class="lbl">Itens no escopo</div></button>
+    <button type="button" class="stat grey${isActive('Pendente')}" data-filter="Pendente"><div class="num">${pendentes}</div><div class="lbl">Pendentes</div></button>
+    <button type="button" class="stat teal${isActive('Entregue')}" data-filter="Entregue"><div class="num">${entregues}</div><div class="lbl">Entregues</div></button>
+    <button type="button" class="stat amber${isActive('Em andamento')}" data-filter="Em andamento"><div class="num">${andamento}</div><div class="lbl">Em andamento</div></button>
+    <button type="button" class="stat red${isActive('atrasados')}" data-filter="atrasados"><div class="num">${atrasados}</div><div class="lbl">Atrasados</div></button>
+    <button type="button" class="stat static"><div class="num">${fmtMoney(valorTotal)}</div><div class="lbl">Valor total</div></button>
+  `;
+
+  document.querySelectorAll('#summary .stat[data-filter]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const key = btn.dataset.filter;
+      if(key === 'all'){
+        activeQuickFilter = null;
+        document.getElementById('filterStatus').value = '';
+      }else if(key === 'atrasados'){
+        activeQuickFilter = 'atrasados';
+        document.getElementById('filterStatus').value = '';
+      }else{
+        activeQuickFilter = key;
+        document.getElementById('filterStatus').value = key;
+      }
+      renderSummary();
+      renderItems();
+    });
+  });
+
+  const ativos = items.filter(i => i.status !== 'Cancelado');
+  const pct = ativos.length ? Math.round(ativos.reduce((s,i)=>s+getItemProgress(i),0) / ativos.length) : 0;
+  document.getElementById('overallPct').textContent = pct + '%';
+  document.getElementById('overallBar').style.width = pct + '%';
+}
+
+function populateGrupoFilter(){
+  const sel = document.getElementById('filterGrupo');
+  const current = sel.value;
+  const grupos = [...new Set(items.map(i => i.grupo))].sort();
+  sel.innerHTML = '<option value="">Todos os grupos</option>' + grupos.map(g => `<option value="${g}">${g}</option>`).join('');
+  sel.value = current;
+}
+
+function getFiltered(){
+  const q = document.getElementById('searchInput').value.toLowerCase().trim();
+  const g = document.getElementById('filterGrupo').value;
+  const s = document.getElementById('filterStatus').value;
+  const sortBy = document.getElementById('sortBy').value;
+
+  let list = items.filter(i => {
+    if(g && i.grupo !== g) return false;
+    if(activeQuickFilter === 'atrasados'){
+      const overdue = i.prazoData && i.status !== 'Entregue' && i.status !== 'Cancelado'
+        && new Date(i.prazoData + 'T00:00:00') < new Date(new Date().toDateString());
+      if(!overdue) return false;
+    }else if(s && i.status !== s){
+      return false;
+    }
+    if(q){
+      const hay = (i.grupo + ' ' + i.desenvolvimento + ' ' + i.detalhamento).toLowerCase();
+      if(!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  list.sort((a,b) => {
+    if(sortBy === 'prazo'){
+      if(!a.prazoData && !b.prazoData) return 0;
+      if(!a.prazoData) return 1;
+      if(!b.prazoData) return -1;
+      return new Date(a.prazoData) - new Date(b.prazoData);
+    }
+    if(sortBy === 'valor') return (Number(b.valor)||0) - (Number(a.valor)||0);
+    if(sortBy === 'status') return a.status.localeCompare(b.status);
+    // prioridade
+    const pa = a.prioridade === 'ZERO' ? -1 : Number(a.prioridade);
+    const pb = b.prioridade === 'ZERO' ? -1 : Number(b.prioridade);
+    return pa - pb;
+  });
+
+  return list;
+}
+
+function renderItems(){
+  const list = getFiltered();
+  const container = document.getElementById('itemsList');
+  document.getElementById('countNote').textContent = `${list.length} de ${items.length} itens`;
+
+  if(list.length === 0){
+    container.innerHTML = `<div class="empty">Nenhum item encontrado com esses filtros.</div>`;
+    return;
+  }
+
+  container.innerHTML = list.map(item => {
+    const isOpen = openDetails.has(item.id);
+    const prioLabel = item.prioridade === 'ZERO' ? 'Prioridade zero' : `Prioridade ${item.prioridade}`;
+    return `
+    <div class="item" data-id="${item.id}">
+      <div class="item-top">
+        <div class="item-title-block">
+          <div class="tags">
+            <span class="tag grupo">${item.grupo}</span>
+            <span class="tag ${prioClass(item.prioridade)}">${prioLabel}</span>
+          </div>
+          <h3 class="item-title">${item.desenvolvimento}</h3>
+          <div class="item-detail ${isOpen ? 'open' : ''}" data-toggle="${item.id}">
+            ${item.detalhamento || '<em>Sem detalhamento.</em>'}
+            <span class="toggle">${isOpen ? 'Recolher ▲' : 'Ver detalhes ▼'}</span>
+          </div>
+        </div>
+        <div class="item-meta">
+          <div class="valor">${fmtMoney(item.valor)}</div>
+          ${entregaBadge(item)}
+          <div class="dias-ref">Estimativa original: ${item.prazoDias != null ? item.prazoDias + ' dias' : 'não estimado'}</div>
+        </div>
+      </div>
+
+      <div class="item-controls">
+        <div class="field">
+          <label>Prazo (data de entrega)</label>
+          <input type="date" class="prazo-input" value="${item.prazoData || ''}">
+          ${prazoFlag(item)}
+        </div>
+        <div class="field">
+          <label>Responsável</label>
+          <input type="text" class="responsavel-input" placeholder="Quem vai executar" value="${(item.responsavel||'').replace(/"/g,'&quot;')}">
+        </div>
+        <div class="field">
+          <label>Status</label>
+          <select class="status-select ${statusClass(item.status)}">
+            ${['Pendente','Em andamento','Aguardando definição','Entregue','Atrasado','Cancelado'].map(s =>
+              `<option value="${s}" ${item.status===s?'selected':''}>${s}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field">
+          <label>Progresso</label>
+          <div class="item-progress">
+            <div class="progress-row">
+              <div class="bar-track"><div class="bar-fill" style="width:${getItemProgress(item)}%"></div></div>
+              <span class="progress-pct">${getItemProgress(item)}%</span>
+            </div>
+            <input type="range" class="progress-slider" min="0" max="100" step="1"
+              value="${getItemProgress(item)}" ${isProgressEditable(item.status) ? '' : 'disabled'}>
+            <div class="progress-hint">${isProgressEditable(item.status) ? 'Ajuste livre' : (item.status === 'Entregue' ? 'Travado em 100% (Entregue)' : 'Travado em 0%')}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="item-footer">
+        <button class="comments-toggle" data-toggle-comments="${item.id}">💬 Comentários (${item.comentarios.length})</button>
+        <button class="remove-btn">Remover item</button>
+      </div>
+
+      ${openComments.has(item.id) ? `
+      <div class="comments-panel">
+        ${item.comentarios.length === 0
+          ? `<div class="comment-empty">Nenhum comentário ainda.</div>`
+          : `<div class="comment-list">${item.comentarios.map(c => `
+              <div class="comment-bubble">
+                <div class="meta">${c.autor ? c.autor + ' · ' : ''}${c.data || 'sem data'}</div>
+                ${(c.texto || '').replace(/</g,'&lt;')}
+              </div>`).join('')}</div>`
+        }
+        <div class="comment-add">
+          <input type="text" class="comment-author" placeholder="Seu nome" value="${getSavedAuthorName().replace(/"/g,'&quot;')}">
+          <input type="text" class="comment-input" placeholder="Escrever um comentário...">
+          <button class="comment-add-btn">Adicionar</button>
+        </div>
+      </div>` : ''}
+    </div>`;
+  }).join('');
+
+  // bind events
+  container.querySelectorAll('.item').forEach(card => {
+    const id = card.dataset.id;
+    const item = items.find(i => i.id === id);
+
+    card.querySelector('.item-detail').addEventListener('click', () => {
+      if(openDetails.has(id)) openDetails.delete(id); else openDetails.add(id);
+      renderItems();
+    });
+
+    card.querySelector('.prazo-input').addEventListener('change', async (e) => {
+      item.prazoData = e.target.value || null;
+      await saveItems();
+      renderSummary();
+      renderItems();
+    });
+
+    card.querySelector('.responsavel-input').addEventListener('change', async (e) => {
+      item.responsavel = e.target.value.trim();
+      await saveItems();
+      renderItems();
+    });
+
+    card.querySelector('.status-select').addEventListener('change', async (e) => {
+      const previousStatus = item.status;
+      item.status = e.target.value;
+      applyProgressRuleOnStatusChange(item, previousStatus);
+      await saveItems();
+      renderSummary();
+      renderItems();
+    });
+
+    const slider = card.querySelector('.progress-slider');
+    slider.addEventListener('input', (e) => {
+      // feedback visual imediato enquanto arrasta, sem re-render pesado
+      const pct = Number(e.target.value);
+      card.querySelector('.progress-pct').textContent = pct + '%';
+      card.querySelector('.item-progress .bar-fill').style.width = pct + '%';
+    });
+    slider.addEventListener('change', async (e) => {
+      item.progress = Number(e.target.value);
+      await saveItems();
+      renderSummary();
+    });
+
+    card.querySelector('[data-toggle-comments]').addEventListener('click', () => {
+      if(openComments.has(id)) openComments.delete(id); else openComments.add(id);
+      renderItems();
+    });
+
+    const commentAddBtn = card.querySelector('.comment-add-btn');
+    if(commentAddBtn){
+      const addComment = async () => {
+        const input = card.querySelector('.comment-input');
+        const authorInput = card.querySelector('.comment-author');
+        const texto = input.value.trim();
+        if(!texto) return;
+        const autor = authorInput.value.trim() || 'Anônimo';
+        saveAuthorName(autor);
+        const agora = new Date().toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
+        item.comentarios.push({ texto, autor, data: agora });
+        await saveItems();
+        renderSummary();
+        renderItems();
+      };
+      commentAddBtn.addEventListener('click', addComment);
+      card.querySelector('.comment-input').addEventListener('keydown', (e) => {
+        if(e.key === 'Enter') addComment();
+      });
+    }
+
+    card.querySelector('.remove-btn').addEventListener('click', async () => {
+      if(confirm(`Remover "${item.desenvolvimento}" do escopo?`)){
+        items = items.filter(i => i.id !== id);
+        await saveItems();
+        renderSummary();
+        populateGrupoFilter();
+        renderItems();
+      }
+    });
+  });
+}
+
+function renderAll(){
+  renderSummary();
+  populateGrupoFilter();
+  renderItems();
+}
+
+// Toolbar events
+['searchInput'].forEach(id => document.getElementById(id).addEventListener('input', renderItems));
+['filterGrupo','sortBy'].forEach(id => document.getElementById(id).addEventListener('change', renderItems));
+// Mudar o status manualmente pelo dropdown limpa o atalho "Atrasados" do resumo (que usa lógica própria de data)
+document.getElementById('filterStatus').addEventListener('change', () => {
+  activeQuickFilter = null;
+  renderSummary();
+  renderItems();
+});
+
+// Add item modal
+const overlay = document.getElementById('overlay');
+document.getElementById('addBtn').addEventListener('click', () => {
+  ['f_grupo','f_desenv','f_detalhe','f_valor'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f_prioridade').value = '1';
+  document.getElementById('f_prazo').value = '';
+  overlay.classList.add('show');
+});
+document.getElementById('cancelAdd').addEventListener('click', () => overlay.classList.remove('show'));
+overlay.addEventListener('click', (e) => { if(e.target === overlay) overlay.classList.remove('show'); });
+
+document.getElementById('confirmAdd').addEventListener('click', async () => {
+  const grupo = document.getElementById('f_grupo').value.trim();
+  const desenvolvimento = document.getElementById('f_desenv').value.trim();
+  if(!grupo || !desenvolvimento){
+    alert('Preencha ao menos o grupo e o título do desenvolvimento.');
+    return;
+  }
+  const novo = {
+    id: uid(),
+    grupo,
+    desenvolvimento,
+    detalhamento: document.getElementById('f_detalhe').value.trim(),
+    prazoDias: null,
+    prioridade: document.getElementById('f_prioridade').value,
+    valor: document.getElementById('f_valor').value ? Number(document.getElementById('f_valor').value) : null,
+    status: 'Pendente',
+    progress: 0,
+    prazoData: document.getElementById('f_prazo').value || null,
+    responsavel: '',
+    comentarios: []
+  };
+  items.unshift(novo);
+  await saveItems();
+  overlay.classList.remove('show');
+  renderAll();
+});
+
+// Reset
+document.getElementById('resetBtn').addEventListener('click', async () => {
+  if(confirm('Isso vai apagar prazos, status e observações que já foram inseridos na planilha para TODO O TIME, voltando à base original. Continuar?')){
+    items = DEFAULT_ITEMS.map(it => ({...it, id: uid(), prazoData: null, progress: it.progress ?? (it.status === 'Entregue' ? 100 : 0)})).map(ensureComments);
+    await saveItems();
+    renderAll();
+  }
+});
+
+// Atualizar agora (manual)
+document.getElementById('refreshBtn').addEventListener('click', async () => {
+  await syncFromServer();
+});
+
+// Tema claro/escuro
+function applyTheme(theme){
+  document.documentElement.setAttribute('data-theme', theme);
+  document.getElementById('themeToggle').textContent = theme === 'light' ? '☀️' : '🌙';
+  try{ localStorage.setItem('hsa_theme', theme); }catch(e){ /* ignora se bloqueado */ }
+}
+document.getElementById('themeToggle').addEventListener('click', () => {
+  const current = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+  applyTheme(current === 'light' ? 'dark' : 'light');
+});
+(function initTheme(){
+  let saved = 'dark';
+  try{ saved = localStorage.getItem('hsa_theme') || 'dark'; }catch(e){}
+  applyTheme(saved);
+})();
+
+// Atualização automática em segundo plano, para refletir mudanças de outras pessoas do time
+setInterval(syncFromServer, 25000);
+
+// Init
+(async function init(){
+  await loadItems();
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('content').style.display = 'block';
+  renderAll();
+})();
+</script>
+</body>
+</html>
